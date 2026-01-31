@@ -14,6 +14,14 @@ class USpringArmComponent;
 class UInputMappingContext;
 class UInputAction;
 
+UENUM(BlueprintType)
+enum class EPlayerStatus : uint8
+{
+	Alive,
+	Dead,
+	Max
+};
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeathSignature, ACharacter*, Player);
 
 UCLASS()
@@ -56,12 +64,21 @@ public:
 	FOnDeathSignature OnDeathDelegate;
 
 	UPROPERTY(BlueprintReadWrite)
+	FTransform StartPoint = FTransform::Identity;
+
+	UPROPERTY(BlueprintReadWrite)
 	FTransform LastCheckpoint = FTransform::Identity;
+
+	UPROPERTY(BlueprintReadWrite)
+	EPlayerStatus CurrentStatus = EPlayerStatus::Alive;
+	
 protected:
 	virtual void BeginPlay() override;
 
 	void InitCameraRail();
 	void MoveCameraOnRail(float DeltaTime);
+
+	void Respawn();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = Player)
 	void Move(const FInputActionValue& Value);

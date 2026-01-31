@@ -29,9 +29,11 @@ void AReal6Player::Die()
 {
 	OnDeathDelegate.Broadcast(this);
 	UE_LOG(LogTemp, Log, TEXT("Player has died."))
-
 	GEngine->AddOnScreenDebugMessage(66, 5.f, FColor::Red, TEXT("You Died!"));
-	SetActorTransform(LastCheckpoint);
+	CurrentStatus = EPlayerStatus::Dead;
+	
+	// TODO: add a timer before respawn
+	Respawn();
 }
 
 void AReal6Player::CheckpointReached(FTransform NewCheckpoint)
@@ -62,6 +64,7 @@ void AReal6Player::BeginPlay()
 
 	// Set last checkpoint to the starting position.
 	LastCheckpoint = GetActorTransform();
+	StartPoint = LastCheckpoint;
 }
 
 void AReal6Player::Move_Implementation(const FInputActionValue& Value)
@@ -127,6 +130,12 @@ void AReal6Player::MoveCameraOnRail(float DeltaTime)
 	);
 
 	Camera->SetWorldRotation(FinalRot);
+}
+
+void AReal6Player::Respawn()
+{
+	SetActorTransform(LastCheckpoint);
+	CurrentStatus = EPlayerStatus::Alive;
 }
 
 void AReal6Player::DoInteract_Implementation(const FInputActionValue& Value)
