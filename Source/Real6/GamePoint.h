@@ -7,6 +7,8 @@
 #include "Components/SphereComponent.h"
 #include "GamePoint.generated.h"
 
+class AReal6Player;
+
 UENUM( BlueprintType )
 enum class EPointType : uint8 {
     Goal        UMETA( DisplayName = "Goal" ),
@@ -42,10 +44,10 @@ public:
 
     // ===== BP Events =====
     UFUNCTION( BlueprintImplementableEvent, Category = "GamePoint" )
-    void OnGoalReached( );
+    void OnGoalReached(AReal6Player* Player);
 
     UFUNCTION( BlueprintImplementableEvent, Category = "GamePoint" )
-    void OnCheckPointReached( );
+    void OnCheckPointReached(AReal6Player* Player);
 
     // ===== Overlap =====
     UFUNCTION( )

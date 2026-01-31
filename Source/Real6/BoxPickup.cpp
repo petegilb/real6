@@ -3,6 +3,8 @@
 
 #include "BoxPickup.h"
 
+#include "Player/Real6Player.h"
+
 
 ABoxPickup::ABoxPickup()
 {
@@ -19,6 +21,8 @@ void ABoxPickup::Interact_Implementation(AReal6Player* InteractingCharacter)
 {
 	FString InteractString = FString::Printf(TEXT("Interacted with %s"), *GetName());
 	GEngine->AddOnScreenDebugMessage(99, 5.f, FColor::Green, InteractString);
+
+	InteractingCharacter->Die();
 }
 
 void ABoxPickup::BeginPlay()

@@ -14,6 +14,8 @@ class USpringArmComponent;
 class UInputMappingContext;
 class UInputAction;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeathSignature, ACharacter*, Player);
+
 UCLASS()
 class REAL6_API AReal6Player : public ACharacter
 {
@@ -41,6 +43,20 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Components)
 	TObjectPtr<UCameraComponent> Camera;
 
+	UFUNCTION(BlueprintCallable, Category = Player)
+	void Die();
+
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	void CheckpointReached(FTransform NewCheckpoint);
+
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	void GoalReached();
+
+	UPROPERTY(BlueprintAssignable)
+	FOnDeathSignature OnDeathDelegate;
+
+	UPROPERTY(BlueprintReadWrite)
+	FTransform LastCheckpoint = FTransform::Identity;
 protected:
 	virtual void BeginPlay() override;
 

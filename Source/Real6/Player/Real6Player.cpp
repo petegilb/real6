@@ -25,6 +25,25 @@ AReal6Player::AReal6Player()
 	bUseControllerRotationYaw = false;
 }
 
+void AReal6Player::Die()
+{
+	OnDeathDelegate.Broadcast(this);
+	UE_LOG(LogTemp, Log, TEXT("Player has died."))
+
+	GEngine->AddOnScreenDebugMessage(66, 5.f, FColor::Red, TEXT("You Died!"));
+	SetActorTransform(LastCheckpoint);
+}
+
+void AReal6Player::CheckpointReached(FTransform NewCheckpoint)
+{
+	LastCheckpoint = NewCheckpoint;
+}
+
+void AReal6Player::GoalReached()
+{
+	UE_LOG(LogTemp, Log, TEXT("Player goal reached."))
+}
+
 void AReal6Player::BeginPlay()
 {
 	Super::BeginPlay();
@@ -40,6 +59,9 @@ void AReal6Player::BeginPlay()
 	{
 		UE_LOG(LogTemp, Error, TEXT("World was not found so we couldn't initialize interact timer!"));
 	}
+
+	// Set last checkpoint to the starting position.
+	LastCheckpoint = GetActorTransform();
 }
 
 void AReal6Player::Move_Implementation(const FInputActionValue& Value)

@@ -1,5 +1,7 @@
 #include "GamePoint.h"
 
+#include "Player/Real6Player.h"
+
 AGamePoint::AGamePoint( ) {
     PrimaryActorTick.bCanEverTick = true;
 
@@ -53,13 +55,16 @@ void AGamePoint::OnOverlapBegin(
         return;
     }
 
+    AReal6Player* Player = Cast<AReal6Player>(OtherActor);
+    if (!Player) return;
+
     switch ( PointType ) {
     case EPointType::Goal:
-        OnGoalReached( );
+        OnGoalReached(Player);
         break;
 
     case EPointType::CheckPoint:
-        OnCheckPointReached( );
+        OnCheckPointReached(Player);
         break;
 
     default:
