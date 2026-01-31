@@ -322,3 +322,4 @@ RELEASE_MSG
 
 # builds
 Build/
+.vsconfig
