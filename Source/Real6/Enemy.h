@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Engine/TargetPoint.h"
 #include "Enemy.generated.h"
 
 UCLASS()
@@ -22,4 +23,16 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+public:
+	// 巡回用 TargetPoint 配列をセットする関数
+	UFUNCTION( BlueprintCallable, Category = "Patrol" )
+	void SetPatrolPoints( const TArray<ATargetPoint*>& InPatrolPoints );
+
+	// 巡回用 TargetPoint 配列
+	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Patrol" )
+	TArray<ATargetPoint*> PatrolPoints;
+
+private:
+	int32 CurrentPatrolIndex;
 };
