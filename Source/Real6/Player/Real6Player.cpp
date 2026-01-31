@@ -3,11 +3,18 @@
 
 #include "Real6Player.h"
 #include "EnhancedInputComponent.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 
 
 AReal6Player::AReal6Player()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComponent"));
+	SpringArmComponent->SetupAttachment(RootComponent);
+	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	Camera->SetupAttachment(SpringArmComponent);
 }
 
 void AReal6Player::BeginPlay()
@@ -16,9 +23,11 @@ void AReal6Player::BeginPlay()
 	
 }
 
-void AReal6Player::Move_Implementation()
+void AReal6Player::Move_Implementation(const FInputActionValue& Value)
 {
-	
+	const FVector2D MovementValue = Value.Get<FVector2D>();
+	AddMovementInput(GetActorRightVector(), -MovementValue.X);
+	AddMovementInput(GetActorForwardVector(), MovementValue.Y);
 }
 
 void AReal6Player::Tick(float DeltaTime)
