@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "Real6Player.generated.h"
 
+class ACameraRail;
 class UCameraComponent;
 class USpringArmComponent;
 class UInputMappingContext;
@@ -41,4 +42,10 @@ protected:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = Player)
 	void Move(const FInputActionValue& Value);
+
+	UPROPERTY(BlueprintReadWrite)
+	TObjectPtr<ACameraRail> CameraRail;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Camera)
+	float SplineRailInterpSpeed = 20.f;
 };

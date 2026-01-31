@@ -2,43 +2,59 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Components/SceneComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Components/SphereComponent.h"
 #include "GamePoint.generated.h"
 
-class USphereComponent;
-class UStaticMeshComponent;
+UENUM( BlueprintType )
+enum class EPointType : uint8 {
+    Goal        UMETA( DisplayName = "Goal" ),
+    CheckPoint  UMETA( DisplayName = "CheckPoint" )
+};
 
 UCLASS( )
 class REAL6_API AGamePoint : public AActor {
-	GENERATED_BODY( )
+    GENERATED_BODY( )
 
 public:
-	AGamePoint( );
+    AGamePoint( );
 
 protected:
-	virtual void BeginPlay( ) override;
+    virtual void BeginPlay( ) override;
 
 public:
-	// 毎フレーム更新（演出・デバッグ用）
-	virtual void Tick( float DeltaTime ) override;
+    virtual void Tick( float DeltaTime ) override;
 
-	// ===== コンポーネント =====
-	UPROPERTY( VisibleAnywhere, Category = "GamePoint" )
-	USceneComponent* Root;
+    // ===== 設定 =====
+    UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "GamePoint" )
+    EPointType PointType;
 
-	UPROPERTY( VisibleAnywhere, Category = "GamePoint" )
-	UStaticMeshComponent* Mesh;
+    // ===== Components =====
+    UPROPERTY( VisibleAnywhere, Category = "GamePoint" )
+    USceneComponent* SceneRoot;
 
-	UPROPERTY( VisibleAnywhere, Category = "GamePoint" )
-	USphereComponent* Trigger;
+    UPROPERTY( VisibleAnywhere, Category = "GamePoint" )
+    UStaticMeshComponent* Mesh;
 
-	// ===== オーバーラップ =====
-	UFUNCTION( )
-	void OnOverlapBegin(
-		UPrimitiveComponent* OverlappedComponent,
-		AActor* OtherActor,
-		UPrimitiveComponent* OtherComp,
-		int32 OtherBodyIndex,
-		bool bFromSweep,
-		const FHitResult& SweepResult
-	);
+    UPROPERTY( VisibleAnywhere, Category = "GamePoint" )
+    USphereComponent* Trigger;
+
+    // ===== BP Events =====
+    UFUNCTION( BlueprintImplementableEvent, Category = "GamePoint" )
+    void OnGoalReached( );
+
+    UFUNCTION( BlueprintImplementableEvent, Category = "GamePoint" )
+    void OnCheckPointReached( );
+
+    // ===== Overlap =====
+    UFUNCTION( )
+    void OnOverlapBegin(
+        UPrimitiveComponent* OverlappedComponent,
+        AActor* OtherActor,
+        UPrimitiveComponent* OtherComp,
+        int32 OtherBodyIndex,
+        bool bFromSweep,
+        const FHitResult& SweepResult
+    );
 };
