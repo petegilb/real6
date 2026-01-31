@@ -8,21 +8,20 @@
 #include "Enemy.generated.h"
 
 UCLASS()
-class REAL6_API AEnemy : public ACharacter
-{
-	GENERATED_BODY()
+class REAL6_API AEnemy : public ACharacter {
+	GENERATED_BODY( )
 
 public:
 	// Sets default values for this character's properties
-	AEnemy();
+	AEnemy( );
 
 protected:
 	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	virtual void BeginPlay( ) override;
 
-public:	
+public:
 	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	virtual void Tick( float DeltaTime ) override;
 
 public:
 	// 巡回用 TargetPoint 配列をセットする関数
@@ -34,5 +33,15 @@ public:
 	TArray<ATargetPoint*> PatrolPoints;
 
 private:
+	void CheckSight( );
+	void OnPlayerFound( AActor* Player );
+	void DrawSightDebug( );
+
+	UPROPERTY( EditAnywhere, Category = "Sight" )
+	float SightDistance = 300.0f;
+
+	UPROPERTY( EditAnywhere, Category = "Sight" )
+	float SightAngle = 60.0f;
+
 	int32 CurrentPatrolIndex;
 };
