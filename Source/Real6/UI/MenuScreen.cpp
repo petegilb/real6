@@ -24,9 +24,6 @@ bool UMenuScreen::Initialize( ) {
 	if ( StartButtonText ) {
 		StartButtonText->SetText( StartButtonTextValue );
 	}
-	if ( StartButtonText ) {
-		StartButtonText->SetText( StartButtonTextValue );
-	}
 	if ( LangToggleButtonText ) {
 		LangToggleButtonText->SetText( LangToggleButtonTextValue );
 	}

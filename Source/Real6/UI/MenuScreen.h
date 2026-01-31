@@ -4,7 +4,6 @@
 #include "Blueprint/UserWidget.h" 
 #include "MenuScreen.generated.h"
 
-// 前方宣言（ButtonやTextBlockを使う場合）
 class UButton;
 class UTextBlock;
 

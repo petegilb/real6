@@ -1,6 +1,7 @@
 #include "MyProjectHUD.h"
 #include "Blueprint/UserWidget.h"
 #include "MenuScreen.h"
+#include "ClearGame.h"
 
 void AMyProjectHUD::BeginPlay( ) {
     Super::BeginPlay( );
@@ -22,6 +23,24 @@ void AMyProjectHUD::ShowMenuScreen( ) {
 void AMyProjectHUD::HideMenuScreen( ) {
     if ( MenuScreenWidget ) {
         MenuScreenWidget->RemoveFromParent( );
+        SetUIInputMode( false );
+    }
+}
+
+void AMyProjectHUD::ShowClearGame( ) {
+    if ( ClearGameWidgetClass ) {
+        ClearGameWidget = CreateWidget<UClearGame>( GetWorld( ), ClearGameWidgetClass );
+
+        if ( ClearGameWidget ) {
+            ClearGameWidget->AddToViewport( );
+            SetUIInputMode( true, ClearGameWidget );
+        }
+    }
+}
+
+void AMyProjectHUD::HideClearGame( ) {
+    if ( ClearGameWidget ) {
+        ClearGameWidget->RemoveFromParent( );
         SetUIInputMode( false );
     }
 }
