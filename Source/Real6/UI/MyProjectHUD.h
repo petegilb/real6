@@ -20,6 +20,12 @@ public:
 
 	UFUNCTION( BlueprintCallable, Category = "UI" )
 	void HideClearGame( );
+
+	UFUNCTION( BlueprintCallable, Category = "UI" )
+	void ShowLoseGame( );
+
+	UFUNCTION( BlueprintCallable, Category = "UI" )
+	void HideLoseGame( );
 public:
 	UPROPERTY( EditAnywhere, Category = "UI" )
 	TSubclassOf<class UMenuScreen> MenuScreenWidgetClass;
@@ -32,6 +38,12 @@ public:
 
 	UPROPERTY( )
 	class UClearGame* ClearGameWidget;
+
+	UPROPERTY( EditAnywhere, Category = "UI" )
+	TSubclassOf<class ULoseGame> LoseGameWidgetClass;
+
+	UPROPERTY( )
+	class ULoseGame* LoseGameWidget;
 
 protected:
 	virtual void BeginPlay( ) override;

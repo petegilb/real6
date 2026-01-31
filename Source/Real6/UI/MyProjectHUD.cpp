@@ -2,6 +2,7 @@
 #include "Blueprint/UserWidget.h"
 #include "MenuScreen.h"
 #include "ClearGame.h"
+#include "LoseGame.h"
 
 void AMyProjectHUD::BeginPlay( ) {
     Super::BeginPlay( );
@@ -41,6 +42,24 @@ void AMyProjectHUD::ShowClearGame( ) {
 void AMyProjectHUD::HideClearGame( ) {
     if ( ClearGameWidget ) {
         ClearGameWidget->RemoveFromParent( );
+        SetUIInputMode( false );
+    }
+}
+
+void AMyProjectHUD::ShowLoseGame( ) {
+    if ( LoseGameWidgetClass ) {
+        LoseGameWidget = CreateWidget<ULoseGame>( GetWorld( ), LoseGameWidgetClass );
+
+        if ( LoseGameWidget ) {
+            LoseGameWidget->AddToViewport( );
+            SetUIInputMode( true, LoseGameWidget );
+        }
+    }
+}
+
+void AMyProjectHUD::HideLoseGame( ) {
+    if ( LoseGameWidget ) {
+        LoseGameWidget->RemoveFromParent( );
         SetUIInputMode( false );
     }
 }
