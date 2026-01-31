@@ -2,9 +2,14 @@
 
 
 #include "Real6Player.h"
+
+#include "CameraRail.h"
 #include "EnhancedInputComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Components/SplineComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 
 
 AReal6Player::AReal6Player()
@@ -33,6 +38,41 @@ void AReal6Player::Move_Implementation(const FInputActionValue& Value)
 void AReal6Player::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	// Keep checking for camera rail until we get one.
+	if (!IsValid(CameraRail))
+	{
+		TArray<AActor*> OutRails;
+		UGameplayStatics::GetAllActorsOfClass(this, ACameraRail::StaticClass(), OutRails);
+		// Assume there is only 0 or 1 rail
+
+		if (OutRails.Num() > 0)
+		{
+			CameraRail = Cast<ACameraRail>(OutRails[0]);
+		}
+		
+		if (CameraRail)
+		{
+			UE_LOG(LogTemp, Log, TEXT("CameraRail found"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("CameraRail doesn't exist in level!"));
+		}
+	}
+
+	if (!IsValid(CameraRail)) return;
+
+	USplineComponent* Spline = CameraRail->CameraSpline;
+	float InputKey = Spline->FindInputKeyClosestToWorldLocation(GetActorLocation() + CameraRail->GetDistanceOffset());
+	float SplineDistance = Spline->GetDistanceAlongSplineAtSplineInputKey(InputKey);
+	FTransform TargetTransform = Spline->GetTransformAtDistanceAlongSpline(
+		SplineDistance, ESplineCoordinateSpace::World);
+	
+	FVector CurrentLocation = SpringArmComponent->GetComponentLocation();
+	FVector NewCamLocation = UKismetMathLibrary::VInterpTo(
+		CurrentLocation, TargetTransform.GetLocation(), DeltaTime, SplineRailInterpSpeed);
+	SpringArmComponent->SetWorldLocation(NewCamLocation);
 }
 
 void AReal6Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
