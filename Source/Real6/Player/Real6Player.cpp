@@ -20,6 +20,8 @@ AReal6Player::AReal6Player()
 	SpringArmComponent->SetupAttachment(RootComponent);
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArmComponent);
+	
+	bUseControllerRotationYaw = false;
 }
 
 void AReal6Player::BeginPlay()
@@ -31,13 +33,18 @@ void AReal6Player::BeginPlay()
 void AReal6Player::Move_Implementation(const FInputActionValue& Value)
 {
 	const FVector2D MovementValue = Value.Get<FVector2D>();
-	AddMovementInput(GetActorRightVector(), -MovementValue.X);
-	AddMovementInput(GetActorForwardVector(), MovementValue.Y);
+	// AddMovementInput(GetActorRightVector(), -MovementValue.X);
+	// AddMovementInput(GetActorForwardVector(), MovementValue.Y);
+	
+	// Constrict movement to world axis
+	AddMovementInput(MovementRightAxis, MovementValue.X);
+	AddMovementInput(MovementForwardAxis, MovementValue.Y);
 }
 
 void AReal6Player::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
 
 	// Keep checking for camera rail until we get one.
 	if (!IsValid(CameraRail))
@@ -73,6 +80,19 @@ void AReal6Player::Tick(float DeltaTime)
 	FVector NewCamLocation = UKismetMathLibrary::VInterpTo(
 		CurrentLocation, TargetTransform.GetLocation(), DeltaTime, SplineRailInterpSpeed);
 	SpringArmComponent->SetWorldLocation(NewCamLocation);
+
+	FVector CamLoc = SpringArmComponent->GetComponentLocation();
+	FVector PlayerLoc = GetActorLocation();
+
+	FRotator LookAt = UKismetMathLibrary::FindLookAtRotation(CamLoc, PlayerLoc);
+	FRotator FinalRot = FMath::RInterpTo(
+		Camera->GetComponentRotation(),
+		LookAt,
+		DeltaTime,
+		10.f
+	);
+
+	Camera->SetWorldRotation(FinalRot);
 }
 
 void AReal6Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
