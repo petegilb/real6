@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
 #include "GameFramework/Character.h"
+#include "Real6/Real6.h"
 #include "Real6Player.generated.h"
 
 class ACameraRail;
@@ -30,6 +31,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> MoveAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UInputAction> InteractAction;
+
 	// Components
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Components)
 	TObjectPtr<USpringArmComponent> SpringArmComponent;
@@ -40,8 +44,14 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	void InitCameraRail();
+	void MoveCameraOnRail(float DeltaTime);
+
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = Player)
 	void Move(const FInputActionValue& Value);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = Player)
+	void DoInteract(const FInputActionValue& Value);
 
 	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<ACameraRail> CameraRail;
@@ -49,9 +59,38 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Camera)
 	float SplineRailInterpSpeed = 20.f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Camera)
+	float CameraRotationSpeed = 10.f;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Movement)
 	FVector MovementForwardAxis = FVector(-1, 0, 0);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Movement)
 	FVector MovementRightAxis = FVector(0, 1, 0);
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Power)
+	EPowerType CurrentPower = EPowerType::None;
+
+	// Interact
+	UPROPERTY()
+	AActor* InteractedObject = nullptr;
+	
+	FTimerHandle InteractTimerHandle;
+	
+	void InteractTimerEvent();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Interact)
+	float InteractTimerSpeed = .1f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Interact)
+	float InteractRadius = 200.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Interact)
+	float StartInteractDistance = 50.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Interact)
+	float EndInteractDistance = 50.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Interact)
+	bool bShowInteractTrace = true;
 };
