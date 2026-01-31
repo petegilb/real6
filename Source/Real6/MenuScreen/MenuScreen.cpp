@@ -1,5 +1,42 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+#include "MenuScreen.h"
+#include "Components/Button.h"
+#include "Components/TextBlock.h"
 
+bool UMenuScreen::Initialize( ) {
+	if ( !Super::Initialize( ) ) {
+		return false;
+	}
+	if ( HasAnyFlags( RF_ClassDefaultObject ) ) {
+		return true;
+	}
 
-#include "MenuScreen/MenuScreen.h"
+	if ( StartButton ) {
+		StartButton->OnClicked.AddDynamic( this, &UMenuScreen::HandleStartButtonClicked );
+	}
+	if ( LangToggleButton ) {
+		LangToggleButton->OnClicked.AddDynamic( this, &UMenuScreen::HandleLangToggleButtonClicked );
+	}
 
+	if ( TitleText ) {
+		TitleText->SetText( TitleTextValue );
+	}
+	if ( StartButtonText ) {
+		StartButtonText->SetText( StartButtonTextValue );
+	}
+	if ( StartButtonText ) {
+		StartButtonText->SetText( StartButtonTextValue );
+	}
+	if ( LangToggleButtonText ) {
+		LangToggleButtonText->SetText( LangToggleButtonTextValue );
+	}
+
+	return true;
+}
+
+void UMenuScreen::HandleStartButtonClicked( ) {
+
+}
+
+void UMenuScreen::HandleLangToggleButtonClicked( ) {
+
+}
