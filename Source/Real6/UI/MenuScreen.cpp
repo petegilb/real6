@@ -1,6 +1,7 @@
 #include "MenuScreen.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
+#include "Kismet/GameplayStatics.h"
 
 bool UMenuScreen::Initialize( ) {
 	if ( !Super::Initialize( ) ) {
@@ -34,7 +35,9 @@ bool UMenuScreen::Initialize( ) {
 }
 
 void UMenuScreen::HandleStartButtonClicked( ) {
-
+	if ( !NextLevel.IsNull( ) ) {
+		UGameplayStatics::OpenLevelBySoftObjectPtr( GetWorld( ), NextLevel );
+	}
 }
 
 void UMenuScreen::HandleLangToggleButtonClicked( ) {

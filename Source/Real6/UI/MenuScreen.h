@@ -15,7 +15,9 @@ class REAL6_API UMenuScreen : public UUserWidget {
 protected:
 	UFUNCTION( )
 	virtual bool Initialize( ) override;
+	UFUNCTION( )
 	void HandleStartButtonClicked( );
+	UFUNCTION( )
 	void HandleLangToggleButtonClicked( );
 protected:
 	UPROPERTY( meta = ( BindWidget ) )
@@ -35,5 +37,7 @@ protected:
 	FText StartButtonTextValue;
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Localization" )
 	FText LangToggleButtonTextValue;
+	UPROPERTY( EditAnywhere, Category = "Navigation" )
+	TSoftObjectPtr<UWorld> NextLevel;
 
 };
