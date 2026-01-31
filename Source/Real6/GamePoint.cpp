@@ -1,53 +1,76 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "GamePoint.h"
-#include "Components/SphereComponent.h"
-#include "Components/StaticMeshComponent.h"
 
-// Sets default values
-AGamePoint::AGamePoint()
-{
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+AGamePoint::AGamePoint( ) {
+    PrimaryActorTick.bCanEverTick = true;
 
-	// Root
-	Root = CreateDefaultSubobject<USceneComponent>( TEXT( "Root" ) );
-	RootComponent = Root;
+    PointType = EPointType::CheckPoint;
 
-	// Mesh（見える用）
-	Mesh = CreateDefaultSubobject<UStaticMeshComponent>( TEXT( "Mesh" ) );
-	Mesh->SetupAttachment( Root );
-	Mesh->SetCollisionEnabled( ECollisionEnabled::NoCollision );
+    // ===== Root =====
+    SceneRoot = CreateDefaultSubobject<USceneComponent>( TEXT( "SceneRoot" ) );
+    RootComponent = SceneRoot;
 
-	// Trigger（踏む用）
-	Trigger = CreateDefaultSubobject<USphereComponent>( TEXT( "Trigger" ) );
-	Trigger->SetupAttachment( Root );
-	Trigger->SetSphereRadius( 120.0f );
-	Trigger->SetCollisionProfileName( TEXT( "Trigger" ) );
+    // ===== Mesh =====
+    Mesh = CreateDefaultSubobject<UStaticMeshComponent>( TEXT( "Mesh" ) );
+    Mesh->SetupAttachment( SceneRoot );
+    Mesh->SetCollisionEnabled( ECollisionEnabled::NoCollision );
+
+    // ===== Trigger =====
+    Trigger = CreateDefaultSubobject<USphereComponent>( TEXT( "Trigger" ) );
+    Trigger->SetupAttachment( SceneRoot );
+    Trigger->SetSphereRadius( 120.0f );
+
+    Trigger->SetCollisionEnabled( ECollisionEnabled::QueryOnly );
+    Trigger->SetCollisionObjectType( ECC_WorldDynamic );
+    Trigger->SetCollisionResponseToAllChannels( ECR_Ignore );
+    Trigger->SetCollisionResponseToChannel( ECC_Pawn, ECR_Overlap );
+    Trigger->SetGenerateOverlapEvents( true );
 }
 
-// Called when the game starts or when spawned
-void AGamePoint::BeginPlay()
-{
-	Super::BeginPlay();
-	
+void AGamePoint::BeginPlay( ) {
+    Super::BeginPlay( );
+
+    if ( Trigger ) {
+        Trigger->OnComponentBeginOverlap.AddDynamic(
+            this,
+            &AGamePoint::OnOverlapBegin
+        );
+    }
 }
 
-// Called every frame
-void AGamePoint::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
+void AGamePoint::Tick( float DeltaTime ) {
+    Super::Tick( DeltaTime );
 }
 
 void AGamePoint::OnOverlapBegin(
-	UPrimitiveComponent* OverlappedComponent,
-	AActor* OtherActor,
-	UPrimitiveComponent* OtherComp,
-	int32 OtherBodyIndex,
-	bool bFromSweep,
-	const FHitResult& SweepResult
+    UPrimitiveComponent* OverlappedComponent,
+    AActor* OtherActor,
+    UPrimitiveComponent* OtherComp,
+    int32 OtherBodyIndex,
+    bool bFromSweep,
+    const FHitResult& SweepResult
 ) {
-	UE_LOG( LogTemp, Log, TEXT( "Overlap!" ) );
+    if ( !OtherActor || OtherActor == this ) {
+        return;
+    }
+
+    switch ( PointType ) {
+    case EPointType::Goal:
+        OnGoalReached( );
+        break;
+
+    case EPointType::CheckPoint:
+        OnCheckPointReached( );
+        break;
+
+    default:
+        break;
+    }
+}
+
+void OnGoalReached( ) {
+    UE_LOG( LogTemp, Warning, TEXT( "Goal!!" ) );
+}
+
+void OnCheckPointReached( ) {
+    UE_LOG( LogTemp, Warning, TEXT( "CheckPoint" ) );
 }
