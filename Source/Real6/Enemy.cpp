@@ -1,6 +1,7 @@
 #include "Enemy.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
+#include "Player/Real6Player.h"
 
 AEnemy::AEnemy( ) {
 	PrimaryActorTick.bCanEverTick = true;
@@ -75,8 +76,10 @@ void AEnemy::CheckSight( ) {
 	}
 }
 
-void AEnemy::OnPlayerFound( AActor* Playeyr ) {
+void AEnemy::OnPlayerFound( AActor* Player ) {
 	UE_LOG( LogTemp, Warning, TEXT( "Player Found" ) );
+	AReal6Player* RealPlayer = Cast<AReal6Player>( Player );
+	RealPlayer->Die( );
 }
 
 void AEnemy::DrawSightDebug( ) {

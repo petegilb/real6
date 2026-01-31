@@ -7,6 +7,8 @@
 #include "Engine/TargetPoint.h"
 #include "Enemy.generated.h"
 
+class AReal6Player;
+
 UCLASS()
 class REAL6_API AEnemy : public ACharacter {
 	GENERATED_BODY( )
