@@ -48,4 +48,10 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Camera)
 	float SplineRailInterpSpeed = 20.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Movement)
+	FVector MovementForwardAxis = FVector(-1, 0, 0);
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Movement)
+	FVector MovementRightAxis = FVector(0, 1, 0);
 };
