@@ -10,6 +10,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Real6/Interactable.h"
 
 
 AReal6Player::AReal6Player()
@@ -27,7 +28,18 @@ AReal6Player::AReal6Player()
 void AReal6Player::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	if (UWorld*	World = GetWorld())
+	{
+		// Set Interact timer
+		World->GetTimerManager().SetTimer(
+			InteractTimerHandle, this, &ThisClass::InteractTimerEvent, InteractTimerSpeed, true
+		);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("World was not found so we couldn't initialize interact timer!"));
+	}
 }
 
 void AReal6Player::Move_Implementation(const FInputActionValue& Value)
@@ -41,11 +53,8 @@ void AReal6Player::Move_Implementation(const FInputActionValue& Value)
 	AddMovementInput(MovementForwardAxis, MovementValue.Y);
 }
 
-void AReal6Player::Tick(float DeltaTime)
+void AReal6Player::InitCameraRail()
 {
-	Super::Tick(DeltaTime);
-	
-
 	// Keep checking for camera rail until we get one.
 	if (!IsValid(CameraRail))
 	{
@@ -67,7 +76,10 @@ void AReal6Player::Tick(float DeltaTime)
 			UE_LOG(LogTemp, Error, TEXT("CameraRail doesn't exist in level!"));
 		}
 	}
+}
 
+void AReal6Player::MoveCameraOnRail(float DeltaTime)
+{
 	if (!IsValid(CameraRail)) return;
 
 	USplineComponent* Spline = CameraRail->CameraSpline;
@@ -89,10 +101,54 @@ void AReal6Player::Tick(float DeltaTime)
 		Camera->GetComponentRotation(),
 		LookAt,
 		DeltaTime,
-		10.f
+		CameraRotationSpeed
 	);
 
 	Camera->SetWorldRotation(FinalRot);
+}
+
+void AReal6Player::DoInteract_Implementation(const FInputActionValue& Value)
+{
+	if (IsValid(InteractedObject) && InteractedObject->Implements<UInteractable>())
+	{
+		IInteractable::Execute_Interact(InteractedObject, this);
+	}
+}
+
+void AReal6Player::InteractTimerEvent()
+{
+	FVector Start = GetActorLocation() + (GetActorForwardVector()*StartInteractDistance);
+	FVector End = GetActorLocation() + (GetActorForwardVector()*EndInteractDistance);
+
+	FHitResult OutHit;
+
+	TArray<AActor*> IgnoreActors;
+	IgnoreActors.Add(this);
+
+	UKismetSystemLibrary::SphereTraceSingle(this, Start, End, InteractRadius,
+		UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel1),
+		false, IgnoreActors, bShowInteractTrace ? EDrawDebugTrace::ForOneFrame : EDrawDebugTrace::None,
+		OutHit, true
+	);
+
+	if (OutHit.bBlockingHit && OutHit.GetActor())
+	{
+		// FString HitString = FString::Printf(TEXT("Hit Object %s"), *OutHit.GetActor()->GetName());
+		// GEngine->AddOnScreenDebugMessage(99, 5.f, FColor::Magenta, HitString);
+		InteractedObject = OutHit.GetActor();
+	}
+	else
+	{
+		InteractedObject = nullptr;
+	}
+}
+
+void AReal6Player::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	
+	InitCameraRail();
+	MoveCameraOnRail(DeltaTime);
 }
 
 void AReal6Player::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -103,6 +159,7 @@ void AReal6Player::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent))
 	{
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ThisClass::Move);
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &ThisClass::DoInteract);
 	}
 }
 
