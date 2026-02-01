@@ -58,6 +58,8 @@ void AReal6Player::StealMask(AEnemy* InEnemy)
 		return;
 	}
 
+	if (CurrentPower != EPowerType::None) return;
+
 	// TODO play animation here too.
 	UAnimInstance* AnimInstance = GetMesh() ? GetMesh()->GetAnimInstance() : nullptr;
 	if (!(AnimInstance && StealMaskMontage)) return;
@@ -79,8 +81,12 @@ void AReal6Player::StealMask(AEnemy* InEnemy)
 		{
 			CurrentPower = InEnemy->EnemyPowerType;
 			GetMesh()->SetSkeletalMesh(EnemyMesh, true);
+			if (AnimationBlueprintMap.Contains(CurrentPower))
+			{
+				GetMesh()->SetAnimInstanceClass(AnimationBlueprintMap.FindRef(CurrentPower));
+			}
 		}
-	}, Duration, false);
+	}, 0.3, false);
 }
 
 void AReal6Player::OnStealMaskMontageEnded(UAnimMontage* Montage, bool bInterrupted)
@@ -164,14 +170,15 @@ void AReal6Player::MoveCameraOnRail(float DeltaTime)
 	FVector TargetLocation = Spline->GetLocationAtDistanceAlongSpline(
 		SplineDistance, ESplineCoordinateSpace::World);
 	
-	// FVector CurrentLocation = SpringArmComponent->GetComponentLocation();
-	// FVector NewCamLocation = UKismetMathLibrary::VInterpTo(
-	// 	CurrentLocation, TargetLocation, DeltaTime, SplineRailInterpSpeed);
-	SpringArmComponent->SetWorldLocation(TargetLocation);
+	FVector CurrentLocation = SpringArmComponent->GetComponentLocation();
+	FVector NewCamLocation = UKismetMathLibrary::VInterpTo(
+		CurrentLocation, TargetLocation, DeltaTime, SplineRailInterpSpeed);
+	SpringArmComponent->SetWorldLocation(NewCamLocation);
 
 	FVector PlayerLoc = GetActorLocation();
 	FVector CameraLoc = Camera->GetComponentLocation();
-
+	
+	// Look at player
 	FRotator LookAt = UKismetMathLibrary::FindLookAtRotation(CameraLoc, PlayerLoc);
 	FRotator FinalRot = FMath::RInterpTo(
 		Camera->GetComponentRotation(),
@@ -186,6 +193,15 @@ void AReal6Player::Respawn()
 {
 	SetActorTransform(LastCheckpoint);
 	CurrentStatus = EPlayerStatus::Alive;
+}
+
+void AReal6Player::DoTransform_Implementation(const FInputActionValue& Value)
+{
+	if (!AnimationBlueprintMap.Contains(EPowerType::None)) return;
+	if (!PlayerMesh) return;
+	GetMesh()->SetSkeletalMesh(PlayerMesh);
+	GetMesh()->SetAnimInstanceClass(AnimationBlueprintMap.FindRef(EPowerType::None));
+	CurrentPower = EPowerType::None;
 }
 
 void AReal6Player::DoJump_Implementation(const FInputActionValue& Value)
@@ -265,6 +281,7 @@ void AReal6Player::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ThisClass::Move);
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &ThisClass::DoInteract);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ThisClass::DoJump);
+		EnhancedInputComponent->BindAction(TransformAction, ETriggerEvent::Started, this, &ThisClass::DoTransform);
 	}
 }
 
