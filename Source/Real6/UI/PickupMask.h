@@ -14,7 +14,8 @@ class REAL6_API UPickupMask : public UUserWidget
 public:
     UFUNCTION()
     void SetPickupData( FText ItemInfo );
-    void OnAnimationFinished( );
+    UFUNCTION( )
+    void OnFadeAnimationFinished( );
 
 protected:
     UPROPERTY( meta = ( BindWidget ) )
