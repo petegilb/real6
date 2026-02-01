@@ -8,6 +8,7 @@
 #include "Real6/Real6.h"
 #include "Real6Player.generated.h"
 
+class AEnemy;
 class ACameraRail;
 class UCameraComponent;
 class USpringArmComponent;
@@ -60,6 +61,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Player")
 	void GoalReached();
 
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	void StealMask(AEnemy* InEnemy);
+
 	UPROPERTY(BlueprintAssignable)
 	FOnDeathSignature OnDeathDelegate;
 
@@ -103,6 +107,12 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Power)
 	EPowerType CurrentPower = EPowerType::None;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Power)
+	UAnimMontage* StealMaskMontage = nullptr;
+
+	UFUNCTION()
+	void OnStealMaskMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 	// Interact
 	UPROPERTY()

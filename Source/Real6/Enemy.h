@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Interactable.h"
+#include "Real6.h"
 #include "GameFramework/Character.h"
 #include "Engine/TargetPoint.h"
 #include "Enemy.generated.h"
@@ -10,7 +12,7 @@
 class AReal6Player;
 
 UCLASS()
-class REAL6_API AEnemy : public ACharacter {
+class REAL6_API AEnemy : public ACharacter, public IInteractable {
 	GENERATED_BODY( )
 
 public:
@@ -25,7 +27,9 @@ public:
 	// Called every frame
 	virtual void Tick( float DeltaTime ) override;
 
-public:
+	// Interact override from IInteractable interface
+	virtual void Interact_Implementation(AReal6Player* InteractingCharacter) override;
+
 	// 巡回用 TargetPoint 配列をセットする関数
 	UFUNCTION( BlueprintCallable, Category = "Patrol" )
 	void SetPatrolPoints( const TArray<ATargetPoint*>& InPatrolPoints );
@@ -33,6 +37,9 @@ public:
 	// 巡回用 TargetPoint 配列
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Patrol" )
 	TArray<ATargetPoint*> PatrolPoints;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Enemy")
+	EPowerType EnemyPowerType = EPowerType::None;
 
 private:
 	void CheckSight( );

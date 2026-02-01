@@ -43,6 +43,11 @@ void AEnemy::Tick( float DeltaTime ) {
 	DrawSightDebug( );
 }
 
+void AEnemy::Interact_Implementation(AReal6Player* InteractingCharacter)
+{
+	InteractingCharacter->StealMask(this);
+}
+
 void AEnemy::SetPatrolPoints( const TArray<ATargetPoint*>& InPatrolPoints ) {
 	PatrolPoints = InPatrolPoints;
 	CurrentPatrolIndex = 0;

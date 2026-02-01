@@ -10,6 +10,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Real6/Enemy.h"
 #include "Real6/Interactable.h"
 
 
@@ -44,6 +45,41 @@ void AReal6Player::CheckpointReached(FTransform NewCheckpoint)
 void AReal6Player::GoalReached()
 {
 	UE_LOG(LogTemp, Log, TEXT("Player goal reached."))
+}
+
+void AReal6Player::StealMask(AEnemy* InEnemy)
+{
+	if (!IsValid(InEnemy))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Tried to steal mask, but enemy is invalid."))
+		return;
+	}
+
+	// TODO play animation here too.
+	UAnimInstance* AnimInstance = GetMesh() ? GetMesh()->GetAnimInstance() : nullptr;
+	if (!(AnimInstance && StealMaskMontage)) return;
+	float Duration = AnimInstance->Montage_Play(StealMaskMontage);
+
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, InEnemy]()
+	{
+		if (CurrentStatus != EPlayerStatus::Alive) return;
+		
+		LOG_ARGS(Log, "Stealing mask from %s", *InEnemy->GetName())
+		// Activate new power
+		// TODO: play sound
+		USkeletalMesh* EnemyMesh = InEnemy->GetMesh()->GetSkeletalMeshAsset();
+		if (EnemyMesh && InEnemy->EnemyPowerType != EPowerType::None)
+		{
+			CurrentPower = InEnemy->EnemyPowerType;
+			GetMesh()->SetSkeletalMesh(EnemyMesh, true);
+		}
+	}, Duration, false);
+}
+
+void AReal6Player::OnStealMaskMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	
 }
 
 void AReal6Player::BeginPlay()
