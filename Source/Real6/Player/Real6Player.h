@@ -8,6 +8,7 @@
 #include "Real6/Real6.h"
 #include "Real6Player.generated.h"
 
+class AMyProjectHUD;
 class AEnemy;
 class ACameraRail;
 class UCameraComponent;
@@ -192,4 +193,7 @@ protected:
 
 	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Interact" )
 	AInteract_Item* HeldItem;
+
+	UPROPERTY()
+	AMyProjectHUD* HUD = nullptr;
 };

@@ -2,6 +2,8 @@
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetInternationalizationLibrary.h"
+#include "Real6/Real6.h"
 
 bool UMenuScreen::Initialize( ) {
 	if ( !Super::Initialize( ) ) {
@@ -28,6 +30,8 @@ bool UMenuScreen::Initialize( ) {
 		LangToggleButtonText->SetText( LangToggleButtonTextValue );
 	}
 
+	UKismetInternationalizationLibrary::SetCurrentCulture(TEXT("ja"), true);
+
 	return true;
 }
 
@@ -38,5 +42,17 @@ void UMenuScreen::HandleStartButtonClicked( ) {
 }
 
 void UMenuScreen::HandleLangToggleButtonClicked( ) {
+	FString CurrentCulture = UKismetInternationalizationLibrary::GetCurrentCulture();
+	LOG_ARGS(Warning, "Current Culture %s", *CurrentCulture)
 
+	if (CurrentCulture.Equals(TEXT("en")))
+	{
+		UKismetInternationalizationLibrary::SetCurrentCulture(TEXT("ja"), true);
+		UE_LOG(LogTemp, Warning, TEXT("Changed to ja"))
+	}
+	else
+	{
+		UKismetInternationalizationLibrary::SetCurrentCulture(TEXT("en"), true);
+		UE_LOG(LogTemp, Warning, TEXT("Changed to en"))
+	}
 }

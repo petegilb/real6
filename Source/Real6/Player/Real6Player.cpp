@@ -15,7 +15,9 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Real6/Enemy.h"
 #include "Real6/Interactable.h"
+#include "Real6/UI/MyProjectHUD.h"
 
+#define LOCTEXT_NAMESPACE "Real6"
 
 AReal6Player::AReal6Player()
 {
@@ -71,6 +73,11 @@ void AReal6Player::GoalReached()
 	{
 		UGameplayStatics::PlaySound2D(this, GoalSound, .8f);
 	}
+
+	if (HUD)
+	{
+		HUD->ShowClearGame();
+	}
 }
 
 void AReal6Player::StealMask(AEnemy* InEnemy)
@@ -83,7 +90,6 @@ void AReal6Player::StealMask(AEnemy* InEnemy)
 
 	if (CurrentPower != EPowerType::None) return;
 
-	// TODO play animation here too.
 	UAnimInstance* AnimInstance = GetMesh() ? GetMesh()->GetAnimInstance() : nullptr;
 	if (!(AnimInstance && StealMaskMontage)) return;
 	float Duration = AnimInstance->Montage_Play(StealMaskMontage);
@@ -97,8 +103,19 @@ void AReal6Player::StealMask(AEnemy* InEnemy)
 		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 		
 		LOG_ARGS(Log, "Stealing mask from %s", *InEnemy->GetName())
+		switch (InEnemy->EnemyPowerType)
+		{
+		case EPowerType::Carry:
+			HUD->ShowPickupMask(LOCTEXT("PickupMask_StolePower", "åŠ›ã®ãƒžã‚¹ã‚¯ã‚’å¥ªã£ãŸ"));
+			break;
+		case EPowerType::Jump:
+			HUD->ShowPickupMask(LOCTEXT("PickupMask_StoleJump", "ã‚¸ãƒ£ãƒ³ãƒ—ã®ãƒžã‚¹ã‚¯ã‚’å¥ªã£ãŸ"));
+			break;
+		default:
+			break;
+		}
+		
 		// Activate new power
-		// TODO: play sound
 		USkeletalMesh* EnemyMesh = InEnemy->GetMesh()->GetSkeletalMeshAsset();
 		if (EnemyMesh && InEnemy->EnemyPowerType != EPowerType::None)
 		{
@@ -136,6 +153,17 @@ void AReal6Player::BeginPlay()
 	// Set last checkpoint to the starting position.
 	LastCheckpoint = GetActorTransform();
 	StartPoint = LastCheckpoint;
+
+	// Delay and set the HUD
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+	{
+		APlayerController* PC = Cast<APlayerController>(Controller);
+		if (PC)
+		{
+			HUD = Cast<AMyProjectHUD>(PC->GetHUD());
+		}
+	}, 1.0f, false);
 }
 
 void AReal6Player::Move_Implementation(const FInputActionValue& Value)
@@ -333,16 +361,16 @@ void AReal6Player::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 void AReal6Player::PickupItem(AInteract_Item* Item) {
 	if ( !Item ) return;
 
-	if ( HeldItem ) return; // ‚·‚Å‚ÉŽ‚Á‚Ä‚¢‚é‚È‚çE‚¦‚È‚¢
+	if ( HeldItem ) return; // ã™ã§ã«æŒã£ã¦ã„ã‚‹ãªã‚‰æ‹¾ãˆãªã„
 
-	// ƒ\ƒPƒbƒg‚ÉƒAƒ^ƒbƒ`
+	// ã‚½ã‚±ãƒƒãƒˆã«ã‚¢ã‚¿ãƒƒãƒ 
 	Item->AttachToComponent(
-		GetMesh( ),                               // ƒLƒƒƒ‰ƒNƒ^[ƒƒbƒVƒ…
+		GetMesh( ),                               // ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãƒ¡ãƒƒã‚·ãƒ¥
 		FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-		FName( "ItemSocket" )                       // ƒ\ƒPƒbƒg–¼
+		FName( "ItemSocket" )                       // ã‚½ã‚±ãƒƒãƒˆå
 	);
 
-	Item->SetActorRelativeLocation( FVector::ZeroVector ); // •K—v‚È‚çƒIƒtƒZƒbƒg’²®
+	Item->SetActorRelativeLocation( FVector::ZeroVector ); // å¿…è¦ãªã‚‰ã‚ªãƒ•ã‚»ãƒƒãƒˆèª¿æ•´
 
 	HeldItem = Item;
 }
@@ -355,17 +383,18 @@ void AReal6Player::DropItem( ) {
 		UGameplayStatics::PlaySound2D(this, BoxSound, 0.7);
 	}
 
-	// ƒhƒƒbƒvˆ—
+	// ãƒ‰ãƒ­ãƒƒãƒ—å‡¦ç†
 	HeldItem->OnDropped( );
 
-	// ƒvƒŒƒCƒ„[‘O•û‚É’u‚­
+	// ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼å‰æ–¹ã«ç½®ã
 	FVector CapsuleOffset = FVector(0, 0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
 	FVector DropLocation = (GetActorLocation( ) - CapsuleOffset) + GetActorForwardVector( ) * 150.f;
 	HeldItem->SetActorLocation( DropLocation );
 	HeldItem->SetActorRotation(FRotator::ZeroRotator);
 
-	// ƒAƒ^ƒbƒ`‰ðœ
+	// ã‚¢ã‚¿ãƒƒãƒè§£é™¤
 	HeldItem->DetachFromActor( FDetachmentTransformRules::KeepWorldTransform );
 
 	HeldItem = nullptr;
 }
+#undef LOCTEXT_NAMESPACE
