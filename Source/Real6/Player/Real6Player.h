@@ -100,6 +100,12 @@ protected:
 	float CameraRotationSpeed = 10.f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Movement)
+	float PlayerRotationRate = 10.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Movement)
+	FRotator PlayerRotationTarget = FRotator::ZeroRotator;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Movement)
 	FVector MovementForwardAxis = FVector(-1, 0, 0);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Movement)
