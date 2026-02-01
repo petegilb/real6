@@ -112,6 +112,15 @@ void AReal6Player::Move_Implementation(const FInputActionValue& Value)
 	// Constrict movement to world axis
 	AddMovementInput(MovementRightAxis, MovementValue.X);
 	AddMovementInput(MovementForwardAxis, MovementValue.Y);
+
+	FVector MoveDirection = MovementRightAxis * MovementValue.X + MovementForwardAxis * MovementValue.Y;
+	if (!MoveDirection.IsNearlyZero())
+	{
+		// Convert movement direction to rotation (yaw only)
+		PlayerRotationTarget = UKismetMathLibrary::MakeRotFromX(MoveDirection);
+		PlayerRotationTarget.Pitch = 0.f;
+		PlayerRotationTarget.Roll = 0.f;
+	}
 }
 
 void AReal6Player::InitCameraRail()
@@ -146,25 +155,24 @@ void AReal6Player::MoveCameraOnRail(float DeltaTime)
 	USplineComponent* Spline = CameraRail->CameraSpline;
 	float InputKey = Spline->FindInputKeyClosestToWorldLocation(GetActorLocation() + CameraRail->GetDistanceOffset());
 	float SplineDistance = Spline->GetDistanceAlongSplineAtSplineInputKey(InputKey);
-	FTransform TargetTransform = Spline->GetTransformAtDistanceAlongSpline(
+	FVector TargetLocation = Spline->GetLocationAtDistanceAlongSpline(
 		SplineDistance, ESplineCoordinateSpace::World);
 	
-	FVector CurrentLocation = SpringArmComponent->GetComponentLocation();
-	FVector NewCamLocation = UKismetMathLibrary::VInterpTo(
-		CurrentLocation, TargetTransform.GetLocation(), DeltaTime, SplineRailInterpSpeed);
-	SpringArmComponent->SetWorldLocation(NewCamLocation);
+	// FVector CurrentLocation = SpringArmComponent->GetComponentLocation();
+	// FVector NewCamLocation = UKismetMathLibrary::VInterpTo(
+	// 	CurrentLocation, TargetLocation, DeltaTime, SplineRailInterpSpeed);
+	SpringArmComponent->SetWorldLocation(TargetLocation);
 
-	FVector CamLoc = SpringArmComponent->GetComponentLocation();
 	FVector PlayerLoc = GetActorLocation();
+	FVector CameraLoc = Camera->GetComponentLocation();
 
-	FRotator LookAt = UKismetMathLibrary::FindLookAtRotation(CamLoc, PlayerLoc);
+	FRotator LookAt = UKismetMathLibrary::FindLookAtRotation(CameraLoc, PlayerLoc);
 	FRotator FinalRot = FMath::RInterpTo(
 		Camera->GetComponentRotation(),
 		LookAt,
 		DeltaTime,
 		CameraRotationSpeed
 	);
-
 	Camera->SetWorldRotation(FinalRot);
 }
 
@@ -213,6 +221,12 @@ void AReal6Player::InteractTimerEvent()
 void AReal6Player::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
+	// Rotate player
+	FRotator CurrentRotation = GetActorRotation();
+	FRotator NewRotation = UKismetMathLibrary::RInterpTo(CurrentRotation,
+		PlayerRotationTarget, DeltaTime, PlayerRotationRate);
+	SetActorRotation(NewRotation);
 	
 	InitCameraRail();
 	MoveCameraOnRail(DeltaTime);
