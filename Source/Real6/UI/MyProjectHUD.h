@@ -26,6 +26,12 @@ public:
 
 	UFUNCTION( BlueprintCallable, Category = "UI" )
 	void HideLoseGame( );
+
+	UFUNCTION( BlueprintCallable, Category = "UI" )
+	void ShowPickupMask( FText ItemInfo );
+
+	UFUNCTION( BlueprintCallable, Category = "UI" )
+	void HidePickupMask( );
 public:
 	UPROPERTY( EditAnywhere, Category = "UI" )
 	TSubclassOf<class UMenuScreen> MenuScreenWidgetClass;
@@ -44,6 +50,12 @@ public:
 
 	UPROPERTY( )
 	class ULoseGame* LoseGameWidget;
+
+	UPROPERTY( EditAnywhere, Category = "UI" )
+	TSubclassOf<class UPickupMask> PickupMaskWidgetClass;
+
+	UPROPERTY( )
+	class UPickupMask* PickupMaskWidget;
 
 protected:
 	virtual void BeginPlay( ) override;

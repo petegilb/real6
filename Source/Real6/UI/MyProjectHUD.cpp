@@ -3,6 +3,7 @@
 #include "MenuScreen.h"
 #include "ClearGame.h"
 #include "LoseGame.h"
+#include "PickupMask.h"
 
 void AMyProjectHUD::BeginPlay( ) {
     Super::BeginPlay( );
@@ -60,6 +61,25 @@ void AMyProjectHUD::ShowLoseGame( ) {
 void AMyProjectHUD::HideLoseGame( ) {
     if ( LoseGameWidget ) {
         LoseGameWidget->RemoveFromParent( );
+        SetUIInputMode( false );
+    }
+}
+
+void AMyProjectHUD::ShowPickupMask( FText ItemInfo ) {
+    if ( PickupMaskWidgetClass ) {
+        PickupMaskWidget = CreateWidget<UPickupMask>( GetWorld( ), PickupMaskWidgetClass );
+
+        if ( PickupMaskWidget ) {
+            PickupMaskWidget->AddToViewport( );
+            PickupMaskWidget->SetPickupData(ItemInfo );
+            SetUIInputMode( true, PickupMaskWidget );
+        }
+    }
+}
+
+void AMyProjectHUD::HidePickupMask( ) {
+    if ( PickupMaskWidget ) {
+        PickupMaskWidget->RemoveFromParent( );
         SetUIInputMode( false );
     }
 }
