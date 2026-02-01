@@ -35,9 +35,15 @@ void AReal6Player::Die()
 	UE_LOG(LogTemp, Log, TEXT("Player has died."))
 	GEngine->AddOnScreenDebugMessage(66, 5.f, FColor::Red, TEXT("You Died!"));
 	CurrentStatus = EPlayerStatus::Dead;
-	
-	// TODO: add a timer before respawn
-	Respawn();
+
+	GetCharacterMovement()->DisableMovement();
+	PlayerRotationTarget = FRotator(180, 0, 0);
+
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+	{
+		Respawn();
+	}, 3.0f, false);
 }
 
 void AReal6Player::CheckpointReached(FTransform NewCheckpoint)
@@ -48,6 +54,7 @@ void AReal6Player::CheckpointReached(FTransform NewCheckpoint)
 void AReal6Player::GoalReached()
 {
 	UE_LOG(LogTemp, Log, TEXT("Player goal reached."))
+	GEngine->AddOnScreenDebugMessage(33, 10.f, FColor::Green, TEXT("You win!!!"));
 }
 
 void AReal6Player::StealMask(AEnemy* InEnemy)
@@ -57,6 +64,8 @@ void AReal6Player::StealMask(AEnemy* InEnemy)
 		UE_LOG(LogTemp, Warning, TEXT("Tried to steal mask, but enemy is invalid."))
 		return;
 	}
+
+	if (CurrentPower != EPowerType::None) return;
 
 	// TODO play animation here too.
 	UAnimInstance* AnimInstance = GetMesh() ? GetMesh()->GetAnimInstance() : nullptr;
@@ -79,8 +88,12 @@ void AReal6Player::StealMask(AEnemy* InEnemy)
 		{
 			CurrentPower = InEnemy->EnemyPowerType;
 			GetMesh()->SetSkeletalMesh(EnemyMesh, true);
+			if (AnimationBlueprintMap.Contains(CurrentPower))
+			{
+				GetMesh()->SetAnimInstanceClass(AnimationBlueprintMap.FindRef(CurrentPower));
+			}
 		}
-	}, Duration, false);
+	}, 0.3, false);
 }
 
 void AReal6Player::OnStealMaskMontageEnded(UAnimMontage* Montage, bool bInterrupted)
@@ -111,6 +124,11 @@ void AReal6Player::BeginPlay()
 
 void AReal6Player::Move_Implementation(const FInputActionValue& Value)
 {
+	if (CurrentStatus == EPlayerStatus::Dead)
+	{
+		return;
+	}
+	
 	const FVector2D MovementValue = Value.Get<FVector2D>();
 	// AddMovementInput(GetActorRightVector(), -MovementValue.X);
 	// AddMovementInput(GetActorForwardVector(), MovementValue.Y);
@@ -164,14 +182,15 @@ void AReal6Player::MoveCameraOnRail(float DeltaTime)
 	FVector TargetLocation = Spline->GetLocationAtDistanceAlongSpline(
 		SplineDistance, ESplineCoordinateSpace::World);
 	
-	// FVector CurrentLocation = SpringArmComponent->GetComponentLocation();
-	// FVector NewCamLocation = UKismetMathLibrary::VInterpTo(
-	// 	CurrentLocation, TargetLocation, DeltaTime, SplineRailInterpSpeed);
-	SpringArmComponent->SetWorldLocation(TargetLocation);
+	FVector CurrentLocation = SpringArmComponent->GetComponentLocation();
+	FVector NewCamLocation = UKismetMathLibrary::VInterpTo(
+		CurrentLocation, TargetLocation, DeltaTime, SplineRailInterpSpeed);
+	SpringArmComponent->SetWorldLocation(NewCamLocation);
 
 	FVector PlayerLoc = GetActorLocation();
 	FVector CameraLoc = Camera->GetComponentLocation();
-
+	
+	// Look at player
 	FRotator LookAt = UKismetMathLibrary::FindLookAtRotation(CameraLoc, PlayerLoc);
 	FRotator FinalRot = FMath::RInterpTo(
 		Camera->GetComponentRotation(),
@@ -186,6 +205,19 @@ void AReal6Player::Respawn()
 {
 	SetActorTransform(LastCheckpoint);
 	CurrentStatus = EPlayerStatus::Alive;
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	PlayerRotationTarget = FRotator::ZeroRotator;
+	SetActorRotation(PlayerRotationTarget);
+	DoTransform();
+}
+
+void AReal6Player::DoTransform_Implementation()
+{
+	if (!AnimationBlueprintMap.Contains(EPowerType::None)) return;
+	if (!PlayerMesh) return;
+	GetMesh()->SetSkeletalMesh(PlayerMesh);
+	GetMesh()->SetAnimInstanceClass(AnimationBlueprintMap.FindRef(EPowerType::None));
+	CurrentPower = EPowerType::None;
 }
 
 void AReal6Player::DoJump_Implementation(const FInputActionValue& Value)
@@ -265,6 +297,7 @@ void AReal6Player::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ThisClass::Move);
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &ThisClass::DoInteract);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ThisClass::DoJump);
+		EnhancedInputComponent->BindAction(TransformAction, ETriggerEvent::Started, this, &ThisClass::DoTransform);
 	}
 }
 

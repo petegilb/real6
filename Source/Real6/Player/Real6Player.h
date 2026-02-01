@@ -48,6 +48,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> JumpAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UInputAction> TransformAction;
+
 	// Components
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Components)
 	TObjectPtr<USpringArmComponent> SpringArmComponent;
@@ -103,6 +106,15 @@ protected:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = Player)
 	void DoJump(const FInputActionValue& Value);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = Player)
+	void DoTransform();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Player)
+	TObjectPtr<USkeletalMesh> PlayerMesh;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Player)
+	TMap<EPowerType, TSubclassOf<UAnimInstance>> AnimationBlueprintMap;
 
 	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<ACameraRail> CameraRail;
