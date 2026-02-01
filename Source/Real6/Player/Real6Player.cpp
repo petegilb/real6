@@ -31,20 +31,13 @@ AReal6Player::AReal6Player()
 
 void AReal6Player::Die()
 {
-	// OnDeathDelegate.Broadcast(this);
-	if (CurrentStatus == EPlayerStatus::Dead) return;
-	
+	OnDeathDelegate.Broadcast(this);
 	UE_LOG(LogTemp, Log, TEXT("Player has died."))
 	GEngine->AddOnScreenDebugMessage(66, 5.f, FColor::Red, TEXT("You Died!"));
 	CurrentStatus = EPlayerStatus::Dead;
 
 	GetCharacterMovement()->DisableMovement();
 	PlayerRotationTarget = FRotator(180, 0, 0);
-
-	if (DeathSound)
-	{
-		UGameplayStatics::PlaySound2D(this, DeathSound, .8f);
-	}
 
 	FTimerHandle TimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
@@ -56,21 +49,12 @@ void AReal6Player::Die()
 void AReal6Player::CheckpointReached(FTransform NewCheckpoint)
 {
 	LastCheckpoint = NewCheckpoint;
-	if (CheckpointSound)
-	{
-		UGameplayStatics::PlaySound2D(this, CheckpointSound, .8f);
-	}
 }
 
 void AReal6Player::GoalReached()
 {
 	UE_LOG(LogTemp, Log, TEXT("Player goal reached."))
 	GEngine->AddOnScreenDebugMessage(33, 10.f, FColor::Green, TEXT("You win!!!"));
-
-	if (GoalSound)
-	{
-		UGameplayStatics::PlaySound2D(this, GoalSound, .8f);
-	}
 }
 
 void AReal6Player::StealMask(AEnemy* InEnemy)
@@ -234,10 +218,6 @@ void AReal6Player::DoTransform_Implementation()
 	GetMesh()->SetSkeletalMesh(PlayerMesh);
 	GetMesh()->SetAnimInstanceClass(AnimationBlueprintMap.FindRef(EPowerType::None));
 	CurrentPower = EPowerType::None;
-	if (TransformSound)
-	{
-		UGameplayStatics::PlaySound2D(this, TransformSound, 0.7);
-	}
 }
 
 void AReal6Player::DoJump_Implementation(const FInputActionValue& Value)
@@ -247,11 +227,6 @@ void AReal6Player::DoJump_Implementation(const FInputActionValue& Value)
 	// TODO. check if we have the right mask
 	if (GetCharacterMovement()->IsMovingOnGround())
 	{
-		if (JumpSound)
-		{
-			UGameplayStatics::PlaySound2D(this, JumpSound, 0.7);
-		}
-		
 		Jump();
 	}
 }
@@ -266,10 +241,6 @@ void AReal6Player::DoInteract_Implementation(const FInputActionValue& Value)
 	
 	if (IsValid(InteractedObject) && InteractedObject->Implements<UInteractable>())
 	{
-		if (InteractSound)
-		{
-			UGameplayStatics::PlaySound2D(this, InteractSound, 0.7);
-		}
 		IInteractable::Execute_Interact(InteractedObject, this);
 	}
 }
@@ -349,11 +320,6 @@ void AReal6Player::PickupItem(AInteract_Item* Item) {
 
 void AReal6Player::DropItem( ) {
 	if ( !HeldItem ) return;
-
-	if (BoxSound)
-	{
-		UGameplayStatics::PlaySound2D(this, BoxSound, 0.7);
-	}
 
 	// ƒhƒƒbƒvˆ—
 	HeldItem->OnDropped( );

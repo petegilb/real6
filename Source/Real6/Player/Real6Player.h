@@ -90,9 +90,6 @@ public:
 
 	UFUNCTION( BlueprintPure )
 	EPowerType GetCurrentPower() const {return CurrentPower;}
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Sound)
-	TObjectPtr<USoundBase> BoxSound;
 protected:
 	virtual void BeginPlay() override;
 
@@ -145,24 +142,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Power)
 	UAnimMontage* StealMaskMontage = nullptr;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Sound)
-	TObjectPtr<USoundBase> JumpSound;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Sound)
-	TObjectPtr<USoundBase> InteractSound;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Sound)
-	TObjectPtr<USoundBase> TransformSound;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Sound)
-	TObjectPtr<USoundBase> DeathSound;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Sound)
-	TObjectPtr<USoundBase> CheckpointSound;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Sound)
-	TObjectPtr<USoundBase> GoalSound;
 
 	UFUNCTION()
 	void OnStealMaskMontageEnded(UAnimMontage* Montage, bool bInterrupted);
