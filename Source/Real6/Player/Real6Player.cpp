@@ -4,6 +4,7 @@
 #include "Real6Player.h"
 
 #include "CameraRail.h"
+#include "Interact_Item.h"
 #include "EnhancedInputComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/SplineComponent.h"
@@ -244,3 +245,41 @@ void AReal6Player::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	}
 }
 
+void AReal6Player::PickupItem( ) {
+	if ( !IsValid( InteractedObject ) ) return;
+
+	AInteract_Item* Item = Cast<AInteract_Item>( InteractedObject );
+	if ( !Item ) return;
+
+	if ( HeldItem ) return; // すでに持っているなら拾えない
+
+	// アイテムの PickUp 処理
+	Item->OnPickedUp( );
+
+	// ソケットにアタッチ
+	Item->AttachToComponent(
+		GetMesh( ),                               // キャラクターメッシュ
+		FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+		FName( "ItemSocket" )                       // ソケット名
+	);
+
+	Item->SetActorRelativeLocation( FVector::ZeroVector ); // 必要ならオフセット調整
+
+	HeldItem = Item;
+}
+
+void AReal6Player::DropItem( ) {
+	if ( !HeldItem ) return;
+
+	// ドロップ処理
+	HeldItem->OnDropped( );
+
+	// プレイヤー前方に置く
+	FVector DropLocation = GetActorLocation( ) + GetActorForwardVector( ) * 150.f;
+	HeldItem->SetActorLocation( DropLocation );
+
+	// アタッチ解除
+	HeldItem->DetachFromActor( FDetachmentTransformRules::KeepWorldTransform );
+
+	HeldItem = nullptr;
+}

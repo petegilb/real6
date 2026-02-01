@@ -1,55 +1,55 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Interact_Item.h"
-#include "Components/StaticMeshComponent.h"
 #include "Components/BoxComponent.h"
+#include "Components/StaticMeshComponent.h"
 
-// Sets default values
 AInteract_Item::AInteract_Item()
-	:InternalID(0)
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+    PrimaryActorTick.bCanEverTick = false;
 
-	Root = CreateDefaultSubobject<USceneComponent>( TEXT( "Root" ) );
-	SetRootComponent( Root );
+    Collision = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision"));
+    SetRootComponent(Collision);
+    Collision->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+    Collision->SetGenerateOverlapEvents(true);
 
-	Mesh = CreateDefaultSubobject<UStaticMeshComponent>( TEXT( "Mesh" ) );
-	Mesh->SetupAttachment( Root );
+    Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+    Mesh->SetupAttachment(Collision);
+    Mesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly );
 
-	Collision = CreateDefaultSubobject<UBoxComponent>( TEXT( "Collision" ) );
-	Collision->SetupAttachment( Root );
-
-	Mesh->SetSimulatePhysics( true );
+    Collision->OnComponentBeginOverlap.AddDynamic(
+        this, &AInteract_Item::OnOverlapBegin
+    );
+    Collision->OnComponentEndOverlap.AddDynamic(
+        this, &AInteract_Item::OnOverlapEnd
+    );
 }
 
-// Called when the game starts or when spawned
 void AInteract_Item::BeginPlay()
 {
-	Super::BeginPlay();
-	
+    Super::BeginPlay();
 }
 
-// Called every frame
-void AInteract_Item::Tick(float DeltaTime)
+void AInteract_Item::OnPickedUp()
 {
-	Super::Tick(DeltaTime);
+    bCanPickUp = false;
 
+    Collision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    SetActorEnableCollision(false);
 }
 
-void AInteract_Item::PickUp( AActor* Interact ) {
-	if ( !Interact ) return;
-
-	bIsInteract = true;
-
-	AttachToActor( Interact, FAttachmentTransformRules::SnapToTargetNotIncludingScale );
+void AInteract_Item::OnDropped()
+{
+    SetActorEnableCollision(true);
+    Collision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 }
 
-void AInteract_Item::Drop( ) {
-	bIsInteract = false;
+void AInteract_Item::OnOverlapBegin( UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult ) {
+    if ( OtherActor && OtherActor->ActorHasTag( TEXT( "Player" ) ) ) {
+        bCanPickUp = true;
+    }
+}
 
-	DetachFromActor( FDetachmentTransformRules::KeepWorldTransform );
-
-	Mesh->SetSimulatePhysics( true );
+void AInteract_Item::OnOverlapEnd( UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex ) {
+    if ( OtherActor && OtherActor->ActorHasTag( TEXT( "Player" ) ) ) {
+        bCanPickUp = false;
+    }
 }

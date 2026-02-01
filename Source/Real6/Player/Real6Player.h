@@ -24,7 +24,7 @@ enum class EPlayerStatus : uint8
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeathSignature, ACharacter*, Player);
-
+class AInteract_Item;
 UCLASS()
 class REAL6_API AReal6Player : public ACharacter
 {
@@ -76,6 +76,11 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	EPlayerStatus CurrentStatus = EPlayerStatus::Alive;
 	
+	UFUNCTION( BlueprintCallable )
+	void PickupItem( );
+
+	UFUNCTION( BlueprintCallable )
+	void DropItem( );
 protected:
 	virtual void BeginPlay() override;
 
@@ -142,4 +147,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Interact)
 	bool bShowInteractTrace = true;
+
+	UPROPERTY( VisibleAnywhere, BlueprintReadOnly, Category = "Interact" )
+	AInteract_Item* HeldItem;
 };
