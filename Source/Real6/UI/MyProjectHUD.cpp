@@ -9,6 +9,7 @@ void AMyProjectHUD::BeginPlay( ) {
 	Super::BeginPlay( );
 
 	PC = GetOwningPlayerController( );
+	SetUIInputMode( false );
 }
 
 void AMyProjectHUD::ShowMenuScreen( ) {
@@ -72,7 +73,6 @@ void AMyProjectHUD::ShowPickupMask( FText ItemInfo ) {
 		if ( PickupMaskWidget ) {
 			PickupMaskWidget->AddToViewport( );
 			PickupMaskWidget->SetPickupData( ItemInfo );
-			SetUIInputMode( true, PickupMaskWidget );
 		}
 	}
 }
@@ -80,7 +80,6 @@ void AMyProjectHUD::ShowPickupMask( FText ItemInfo ) {
 void AMyProjectHUD::HidePickupMask( ) {
 	if ( PickupMaskWidget ) {
 		PickupMaskWidget->RemoveFromParent( );
-		SetUIInputMode( false );
 	}
 }
 
