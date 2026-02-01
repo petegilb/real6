@@ -1,6 +1,7 @@
 #include "Interact_Item.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Real6/Player/Real6Player.h"
 
 AInteract_Item::AInteract_Item()
@@ -38,6 +39,11 @@ void AInteract_Item::OnPickedUp(AReal6Player* InteractingCharacter)
     bCanPickUp = false;
     Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     SetActorEnableCollision(false);
+
+    if (InteractingCharacter && InteractingCharacter->BoxSound)
+    {
+        UGameplayStatics::PlaySound2D(this, InteractingCharacter->BoxSound, 0.7);
+    }
 
     // Attach to the player
     InteractingCharacter->PickupItem(this);
