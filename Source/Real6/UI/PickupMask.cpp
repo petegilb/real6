@@ -3,18 +3,19 @@
 #include "Animation/WidgetAnimation.h"
 
 void UPickupMask::SetPickupData( FText Info ) {
-    if ( ItemInfoText ) ItemInfoText->SetText( Info );
+	if ( ItemInfoText ) ItemInfoText->SetText( Info );
 
-    if ( FadeInAndOut ) {
-        
-        PlayAnimation( FadeInAndOut );
+	if ( FadeInAndOut ) {
 
-        FWidgetAnimationDynamicEvent EndEvent;
-        EndEvent.BindDynamic( this, &UPickupMask::OnAnimationFinished );
-        BindToAnimationFinished( FadeInAndOut, EndEvent );
-    }
+		PlayAnimation( FadeInAndOut );
+
+		FWidgetAnimationDynamicEvent EndEvent;
+		EndEvent.BindDynamic( this, &UPickupMask::OnFadeAnimationFinished );
+		BindToAnimationFinished( FadeInAndOut, EndEvent );
+	}
 }
 
-void UPickupMask::OnAnimationFinished( ) {
-    RemoveFromParent( ); 
+void UPickupMask::OnFadeAnimationFinished( ) {
+	SetVisibility( ESlateVisibility::Collapsed );
+	RemoveFromParent( );
 }
