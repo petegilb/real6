@@ -84,7 +84,10 @@ void AEnemy::CheckSight( ) {
 void AEnemy::OnPlayerFound( AActor* Player ) {
 	UE_LOG( LogTemp, Warning, TEXT( "Player Found" ) );
 	AReal6Player* RealPlayer = Cast<AReal6Player>( Player );
-	RealPlayer->Die( );
+	if ( EnemyPowerType == RealPlayer->GetCurrentPower( ) ) {
+		return;
+	}
+		RealPlayer->Die( );
 }
 
 void AEnemy::DrawSightDebug( ) {
