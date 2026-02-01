@@ -21,7 +21,11 @@ void AInteract_Item::Interact_Implementation(AReal6Player* InteractingCharacter)
 {
     FString InteractString = FString::Printf(TEXT("Interacted with %s"), *GetName());
     GEngine->AddOnScreenDebugMessage(99, 5.f, FColor::Green, InteractString);
-    OnPickedUp(InteractingCharacter);
+
+    if (InteractingCharacter->GetCurrentPower() == EPowerType::Carry)
+    {
+        OnPickedUp(InteractingCharacter);
+    }
 }
 
 void AInteract_Item::BeginPlay()
