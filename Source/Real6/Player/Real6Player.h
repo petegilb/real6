@@ -45,6 +45,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UInputAction> InteractAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UInputAction> JumpAction;
+
 	// Components
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Components)
 	TObjectPtr<USpringArmComponent> SpringArmComponent;
@@ -77,10 +80,13 @@ public:
 	EPlayerStatus CurrentStatus = EPlayerStatus::Alive;
 	
 	UFUNCTION( BlueprintCallable )
-	void PickupItem( );
+	void PickupItem(AInteract_Item* Item);
 
 	UFUNCTION( BlueprintCallable )
 	void DropItem( );
+
+	UFUNCTION( BlueprintPure )
+	EPowerType GetCurrentPower() const {return CurrentPower;}
 protected:
 	virtual void BeginPlay() override;
 
@@ -94,6 +100,9 @@ protected:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = Player)
 	void DoInteract(const FInputActionValue& Value);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = Player)
+	void DoJump(const FInputActionValue& Value);
 
 	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<ACameraRail> CameraRail;

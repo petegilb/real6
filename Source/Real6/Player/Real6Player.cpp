@@ -7,7 +7,9 @@
 #include "Interact_Item.h"
 #include "EnhancedInputComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/SplineComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -61,10 +63,13 @@ void AReal6Player::StealMask(AEnemy* InEnemy)
 	if (!(AnimInstance && StealMaskMontage)) return;
 	float Duration = AnimInstance->Montage_Play(StealMaskMontage);
 
+	GetCharacterMovement()->DisableMovement();
+
 	FTimerHandle TimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this, InEnemy]()
 	{
 		if (CurrentStatus != EPlayerStatus::Alive) return;
+		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 		
 		LOG_ARGS(Log, "Stealing mask from %s", *InEnemy->GetName())
 		// Activate new power
@@ -183,8 +188,25 @@ void AReal6Player::Respawn()
 	CurrentStatus = EPlayerStatus::Alive;
 }
 
+void AReal6Player::DoJump_Implementation(const FInputActionValue& Value)
+{
+	if (CurrentPower != EPowerType::Jump) return;
+	
+	// TODO. check if we have the right mask
+	if (GetCharacterMovement()->IsMovingOnGround())
+	{
+		Jump();
+	}
+}
+
 void AReal6Player::DoInteract_Implementation(const FInputActionValue& Value)
 {
+	if (HeldItem)
+	{
+		DropItem();
+		return;
+	}
+	
 	if (IsValid(InteractedObject) && InteractedObject->Implements<UInteractable>())
 	{
 		IInteractable::Execute_Interact(InteractedObject, this);
@@ -242,19 +264,14 @@ void AReal6Player::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	{
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ThisClass::Move);
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &ThisClass::DoInteract);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ThisClass::DoJump);
 	}
 }
 
-void AReal6Player::PickupItem( ) {
-	if ( !IsValid( InteractedObject ) ) return;
-
-	AInteract_Item* Item = Cast<AInteract_Item>( InteractedObject );
+void AReal6Player::PickupItem(AInteract_Item* Item) {
 	if ( !Item ) return;
 
 	if ( HeldItem ) return; // すでに持っているなら拾えない
-
-	// アイテムの PickUp 処理
-	Item->OnPickedUp( );
 
 	// ソケットにアタッチ
 	Item->AttachToComponent(
@@ -275,8 +292,10 @@ void AReal6Player::DropItem( ) {
 	HeldItem->OnDropped( );
 
 	// プレイヤー前方に置く
-	FVector DropLocation = GetActorLocation( ) + GetActorForwardVector( ) * 150.f;
+	FVector CapsuleOffset = FVector(0, 0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+	FVector DropLocation = (GetActorLocation( ) - CapsuleOffset) + GetActorForwardVector( ) * 150.f;
 	HeldItem->SetActorLocation( DropLocation );
+	HeldItem->SetActorRotation(FRotator::ZeroRotator);
 
 	// アタッチ解除
 	HeldItem->DetachFromActor( FDetachmentTransformRules::KeepWorldTransform );
