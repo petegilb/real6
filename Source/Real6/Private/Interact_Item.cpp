@@ -15,12 +15,7 @@ AInteract_Item::AInteract_Item()
     Mesh->SetupAttachment(Collision);
     Mesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly );
 
-    Collision->OnComponentBeginOverlap.AddDynamic(
-        this, &AInteract_Item::OnOverlapBegin
-    );
-    Collision->OnComponentEndOverlap.AddDynamic(
-        this, &AInteract_Item::OnOverlapEnd
-    );
+   
 }
 
 void AInteract_Item::BeginPlay()
