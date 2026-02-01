@@ -108,7 +108,7 @@ protected:
 	void DoJump(const FInputActionValue& Value);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = Player)
-	void DoTransform(const FInputActionValue& Value);
+	void DoTransform();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Player)
 	TObjectPtr<USkeletalMesh> PlayerMesh;
