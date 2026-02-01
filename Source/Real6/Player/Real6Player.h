@@ -77,7 +77,7 @@ public:
 	EPlayerStatus CurrentStatus = EPlayerStatus::Alive;
 	
 	UFUNCTION( BlueprintCallable )
-	void PickupItem( );
+	void PickupItem(AInteract_Item* Item);
 
 	UFUNCTION( BlueprintCallable )
 	void DropItem( );
